@@ -1,0 +1,6 @@
+Python 3.14.6
+Django==6.0.7
+psycopg[binary]==3.3.4
+python-dotenv==1.0.1
+PostgreSQL 15
+pgAdmin 4

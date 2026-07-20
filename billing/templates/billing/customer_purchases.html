@@ -1,0 +1,32 @@
+{% extends 'billing/base.html' %}
+
+{% block title %}Previous Purchases{% endblock %}
+
+{% block content %}
+<h1>Previous Purchases</h1>
+
+<form method="get">
+    <label for="email">Customer Email</label>
+    <input type="email" id="email" name="email" value="{{ email }}" required>
+    <button type="submit">Search</button>
+</form>
+
+{% if invoices is not None %}
+    <h3>Purchases for {{ email }}</h3>
+    {% if invoices %}
+        <table>
+            <tr><th>Invoice #</th><th>Date</th><th>Net price</th><th></th></tr>
+            {% for invoice in invoices %}
+            <tr>
+                <td>{{ invoice.pk }}</td>
+                <td>{{ invoice.created_at }}</td>
+                <td>{{ invoice.rounded_net_price }}</td>
+                <td><a href="{% url 'billing:invoice_detail' invoice.pk %}">View items</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No previous purchases found for this email.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

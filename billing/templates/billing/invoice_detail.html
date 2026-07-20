@@ -1,0 +1,62 @@
+{% extends 'billing/base.html' %}
+
+{% block title %}Billing Page{% endblock %}
+
+{% block content %}
+<h1>Billing Page</h1>
+
+<div class="row"><label>Customer Email</label> {{ invoice.customer_email }}</div>
+<div class="row"><label>Invoice #</label> {{ invoice.pk }}</div>
+<div class="row"><label>Date</label> {{ invoice.created_at }}</div>
+<div class="row">
+    <label>Email status</label>
+    {% if invoice.email_sent %}Invoice emailed to customer.{% else %}Sending invoice email in the background...{% endif %}
+</div>
+
+<h3>Bill section</h3>
+<table>
+    <tr>
+        <th>Product ID</th>
+        <th>Unit Price</th>
+        <th>Quantity</th>
+        <th>Purchase Price</th>
+        <th>Tax % for item</th>
+        <th>Tax payable for item</th>
+        <th>Total price of the item</th>
+    </tr>
+    {% for item in invoice.items.all %}
+    <tr>
+        <td>{{ item.product.product_id }}</td>
+        <td>{{ item.unit_price }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.purchase_price }}</td>
+        <td>{{ item.tax_percentage }}</td>
+        <td>{{ item.tax_payable }}</td>
+        <td>{{ item.total_price }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<table>
+    <tr><td>Total price without tax:</td><td>{{ invoice.total_before_tax }}</td></tr>
+    <tr><td>Total tax payable:</td><td>{{ invoice.total_tax_payable }}</td></tr>
+    <tr><td>Net price of the purchased item:</td><td>{{ invoice.net_price }}</td></tr>
+    <tr><td>Rounded down value of the purchased items net price:</td><td>{{ invoice.rounded_net_price }}</td></tr>
+    <tr><td>Cash paid by customer:</td><td>{{ invoice.cash_paid }}</td></tr>
+    <tr><td>Balance payable to the customer:</td><td>{{ invoice.balance_amount }}</td></tr>
+</table>
+
+<h3>Balance Denomination</h3>
+<table>
+    {% for value, count in breakdown %}
+    <tr><td>{{ value }}:</td><td>{{ count }}</td></tr>
+    {% empty %}
+    <tr><td colspan="2">No change due.</td></tr>
+    {% endfor %}
+</table>
+{% if invoice.unresolved_balance > 0 %}
+    <p class="errorlist">
+        Warning: {{ invoice.unresolved_balance }} could not be made up with the shop's current denomination stock.
+    </p>
+{% endif %}
+{% endblock %}

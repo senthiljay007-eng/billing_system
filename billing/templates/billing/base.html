@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Billing System{% endblock %}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        table { border-collapse: collapse; margin: 1rem 0; }
+        th, td { border: 1px solid #999; padding: 0.4rem 0.8rem; text-align: left; }
+        .errorlist { color: #b00020; }
+        .messages { color: #b00020; list-style: none; padding: 0; }
+        nav a { margin-right: 1rem; }
+        .row { margin-bottom: 0.5rem; }
+        label { display: inline-block; min-width: 140px; }
+        .product-name-hint { margin: 0 0.75rem; color: #555; font-style: italic; }
+        .product-name-hint-error { color: #b00020; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'billing:bill_create' %}">Generate Bill</a>
+        <a href="{% url 'billing:customer_purchases' %}">View Previous Purchases</a>
+        <a href="/admin/">Admin</a>
+    </nav>
+    <hr>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+        </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+</body>
+</html>

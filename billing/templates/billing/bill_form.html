@@ -1,0 +1,121 @@
+{% extends 'billing/base.html' %}
+
+{% block title %}Billing Page{% endblock %}
+
+{% block content %}
+<h1>Billing Page</h1>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="row">
+        <label for="{{ info_form.customer_email.id_for_label }}">Customer Email</label>
+        {{ info_form.customer_email }}
+        {{ info_form.customer_email.errors }}
+    </div>
+
+    <div style="display: flex; align-items: flex-start;">
+        <div style="flex: 1;">
+            <h3>Bill section</h3>
+
+            {{ item_formset.management_form }}
+            {% if item_formset.non_form_errors %}
+                <div class="errorlist">{{ item_formset.non_form_errors }}</div>
+            {% endif %}
+
+            <div id="item-forms">
+                {% for form in item_formset %}
+                    <div class="row item-row">
+                        {{ form.product_id }}
+                        <span class="product-name-hint" id="hint_items-{{ forloop.counter0 }}-product_id"></span>
+                        {{ form.quantity }}
+                        {{ form.errors }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <template id="empty-form-template">
+                <div class="row item-row">
+                    {{ item_formset.empty_form.product_id }}
+                    <span class="product-name-hint" id="hint_items-__prefix__-product_id"></span>
+                    {{ item_formset.empty_form.quantity }}
+                </div>
+            </template>
+
+            <button type="button" id="add-new-btn">Add New</button>
+        </div>
+
+        <div style="width: 1px; background: #999; margin: 0 2rem; align-self: stretch;"></div>
+
+        <div style="flex: 1;">
+            <h3>Denominations</h3>
+            {% for field in denom_form %}
+                <div class="row">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+        <label for="{{ info_form.cash_paid.id_for_label }}">Cash paid by customer</label>
+        {{ info_form.cash_paid }}
+        {{ info_form.cash_paid.errors }}
+    </div>
+
+    <div class="row">
+        <a href="{% url 'billing:bill_create' %}"><button type="button">Cancel</button></a>
+        <button type="submit">Generate Bill</button>
+    </div>
+</form>
+
+<script>
+    document.getElementById('add-new-btn').addEventListener('click', function () {
+        var totalForms = document.getElementById('id_items-TOTAL_FORMS');
+        var formIdx = parseInt(totalForms.value, 10);
+        var template = document.getElementById('empty-form-template').innerHTML.replace(/__prefix__/g, formIdx);
+        document.getElementById('item-forms').insertAdjacentHTML('beforeend', template);
+        totalForms.value = formIdx + 1;
+    });
+
+    // Shows the matching product's name next to a Product ID field as the
+    // user types, so they can confirm they entered the right item before
+    // submitting. Uses event delegation on the container so it also works
+    // for rows added later by the "Add New" button above.
+    var productLookupUrl = "{% url 'billing:product_lookup' %}";
+    var lookupTimers = {};
+
+    document.getElementById('item-forms').addEventListener('input', function (event) {
+        var field = event.target;
+        if (!field.name || field.name.indexOf('-product_id') === -1) return;
+
+        var hint = document.getElementById('hint_' + field.id.slice('id_'.length));
+        var productId = field.value.trim();
+
+        clearTimeout(lookupTimers[field.id]);
+        if (!hint) return;
+        if (!productId) {
+            hint.textContent = '';
+            return;
+        }
+
+        lookupTimers[field.id] = setTimeout(function () {
+            fetch(productLookupUrl + '?product_id=' + encodeURIComponent(productId))
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.found) {
+                        hint.textContent = data.name;
+                        hint.className = 'product-name-hint';
+                    } else {
+                        hint.textContent = 'Product not found';
+                        hint.className = 'product-name-hint product-name-hint-error';
+                    }
+                });
+        }, 300);
+    });
+</script>
+{% endblock %}

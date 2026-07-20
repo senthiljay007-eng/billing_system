@@ -1,0 +1,17 @@
+Thank you for your purchase!
+
+Invoice #{{ invoice.pk }}
+Date: {{ invoice.created_at }}
+Customer: {{ invoice.customer_email }}
+
+Items:
+{% for item in invoice.items.all %}- {{ item.product_name }} ({{ item.product.product_id }}) x {{ item.quantity }} @ {{ item.unit_price }} = {{ item.total_price }} (incl. tax {{ item.tax_percentage }}%)
+{% endfor %}
+Total price without tax: {{ invoice.total_before_tax }}
+Total tax payable: {{ invoice.total_tax_payable }}
+Net price: {{ invoice.net_price }}
+Rounded net price: {{ invoice.rounded_net_price }}
+Cash paid: {{ invoice.cash_paid }}
+Balance returned to you: {{ invoice.balance_amount }}
+
+Thank you for shopping with us.
